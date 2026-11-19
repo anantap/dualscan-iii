@@ -7,6 +7,8 @@ bundle ID, settings, scans folder and updates), so both can sit on one Mac
 without getting in each other's way.
 
 Download: https://github.com/anantap/dualscan-iii/releases/latest
+
+Runs on macOS 14 Sonoma or later, on Apple silicon and Intel Macs.
 Scan once at full quality, make a base edit live (no rescans), then export
 a JPEG, a 16-bit base TIFF or the raw scan, or open the scans in another app.
 
@@ -25,7 +27,7 @@ the connected model can do and shows only that: on the Dual III that is 705,
 lets the driver report an empty holder and eject on the Dual III too, as it
 already does on the Dual IV.
 
-Needs `brew install autoconf autoconf-archive automake libtool pkgconf libusb gettext xcodegen`.
+Needs `brew install autoconf autoconf-archive automake libtool pkgconf gettext xcodegen`.
 
 ## Building the app
 

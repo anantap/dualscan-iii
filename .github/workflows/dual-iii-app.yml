@@ -3,9 +3,9 @@ name: Dual III app
 # Builds Dual Scan III on a Mac (with the SANE driver inside), runs the self-test on the simulated
 # Dual III, and publishes it as the latest release, tagged build-<n>. The app updates itself from it.
 # To share it: https://github.com/anantap/dualscan-iii/releases/latest
+# Other branches build and run the same checks, without publishing.
 on:
   push:
-    branches: [main]
     paths:
       - 'app/**'
       - 'scripts/**'
@@ -18,11 +18,9 @@ concurrency:
 
 jobs:
   build:
-    # The app targets macOS 26, so it needs Xcode 26.
+    # Xcode 26 builds it; the app itself runs on macOS 14 and later.
     runs-on: macos-26
     timeout-minutes: 40
-    # Publish only from main.
-    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
     env:
@@ -37,7 +35,7 @@ jobs:
         run: echo "BUILD_NUMBER=$(( ${{ github.run_number }} + 1 ))" >> "$GITHUB_ENV"
 
       - name: Install the build tools
-        run: brew install autoconf autoconf-archive automake libtool pkgconf libusb gettext xcodegen
+        run: brew install autoconf autoconf-archive automake libtool pkgconf gettext xcodegen
 
       - name: Reuse the SANE build
         uses: actions/cache@v4
@@ -55,6 +53,11 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Contents/Info.plist")" = "$BUILD_NUMBER"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")" = "nl.ananta.dualscan3"
           test -f "$APP/Contents/Resources/sane.d/dll.conf"
+          # Universal, for macOS 14 and later.
+          lipo -archs "$APP/Contents/MacOS/Dual Scan III" | tee /dev/stderr | grep -q 'x86_64 arm64\|arm64 x86_64'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$APP/Contents/Info.plist")" = "14.0"
+          vtool -show-build "$APP/Contents/MacOS/Dual Scan III" | grep -E 'minos'
+          if vtool -show-build "$APP/Contents/MacOS/Dual Scan III" | grep -E 'minos (1[5-9]|2[0-9])\.'; then exit 1; fi
           test -f "$APP/Contents/Resources/Fonts/geist-latin.woff2"
           # Nothing outside the app and macOS: no Homebrew, no SANE folder.
           if otool -L "$APP/Contents/MacOS/Dual Scan III" | grep -E '/opt/homebrew|/usr/local|/sane/'; then exit 1; fi
@@ -72,6 +75,20 @@ jobs:
           grep -q 'exported 10 base TIFFs' "$OUT/log.txt"  # numbers continue: no overwrites
           mkdir -p selftest && cp "$OUT"/*.png "$OUT/log.txt" selftest/
 
+      - name: Run the Intel build too
+        # Under Rosetta, when the runner has it: the app starts and finds no scanner.
+        run: |
+          if arch -x86_64 /usr/bin/true 2>/dev/null; then
+            OUT="$RUNNER_TEMP/selftest-intel"
+            arch -x86_64 "$APP/Contents/MacOS/Dual Scan III" --selftest "$OUT" &
+            PID=$!
+            for i in $(seq 1 600); do kill -0 $PID 2>/dev/null || break; sleep 1; done
+            kill $PID 2>/dev/null && { echo "The Intel self-test didn't finish"; exit 1; } || true
+            grep -q 'exported 10 base TIFFs' "$OUT/log.txt" && echo "Intel self-test passed"
+          else
+            echo "No Rosetta on this runner; skipped."
+          fi
+
       - name: Package the app
         run: ditto -c -k --keepParent "$APP" Dual-Scan-III.zip
 
@@ -84,6 +101,7 @@ jobs:
           retention-days: 30
 
       - name: Publish the release
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

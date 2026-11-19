@@ -3,7 +3,7 @@ name: DualScan
 options:
   bundleIdPrefix: nl.ananta
   deploymentTarget:
-    macOS: "26.0"
+    macOS: "14.0"   # keep the same as MACOSX_DEPLOYMENT_TARGET in scripts/build-sane.sh
   createIntermediateGroups: true
 
 targets:
@@ -39,8 +39,9 @@ targets:
         SWIFT_VERSION: "5.0"
         SWIFT_STRICT_CONCURRENCY: minimal
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        # The SANE build is Apple Silicon only.
-        ARCHS: arm64
+        # Universal: Apple silicon and Intel (the SANE build is both too).
+        ARCHS: "arm64 x86_64"
+        ONLY_ACTIVE_ARCH: NO
         SWIFT_OBJC_BRIDGING_HEADER: Sources/Bridging.h
         # The SANE driver from ../sane (scripts/build-sane.sh), linked in statically with libusb,
         # so the app needs nothing outside itself and can update itself.
