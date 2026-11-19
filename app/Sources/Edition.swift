@@ -10,7 +10,9 @@ enum Edition {
     static let supportedModels = ["Dual III"]
     /// What the simulator plays.
     static let simulated = ScannerCapabilities.dualIII
-    /// Its releases are tagged `dual-iii-build-<n>`; Dual Scan only takes `build-<n>`, so it never sees them.
-    static let releaseTagPrefix = "dual-iii-build-"
+    /// Where it updates from: its own repository, apart from Dual Scan's.
+    static let repository = "anantap/dualscan-iii"
+    /// Its releases are tagged `build-<n>`.
+    static let releaseTagPrefix = "build-"
     static let releaseAsset = "Dual-Scan-III.zip"
 }

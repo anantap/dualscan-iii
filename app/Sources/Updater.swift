@@ -3,7 +3,7 @@ import Foundation
 import Observation
 
 /// Keeps the app up to date from the repository's GitHub releases, like Roll Converter. Every push
-/// to the `dual-iii` branch builds the app and publishes it as a release tagged `dual-iii-build-<number>`. The app looks for a
+/// to `main` of its own repository builds the app and publishes it as the latest release, tagged `build-<number>`. The app looks for a
 /// newer one at launch, downloads it in the background, and puts it in place when you restart (or quit).
 @MainActor @Observable
 final class Updater {
@@ -22,7 +22,7 @@ final class Updater {
     /// The update popup is open.
     var promptShown = false
 
-    static let repository = "anantap/dualscan"
+    static let repository = Edition.repository
     static let assetName = Edition.releaseAsset
     static let appName = "\(Edition.name).app"
 

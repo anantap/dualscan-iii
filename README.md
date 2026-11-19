@@ -1,10 +1,12 @@
 # Dual Scan III
 
 The Dual III edition of Dual Scan: a Mac app for the Minolta Dimage Scan
-Dual III, to replace VueScan. It lives on the `dual-iii` branch; Dual Scan for
-the Dual IV lives on `main`. They are separate apps (their own name, bundle ID,
-settings, scans folder and updates), so both can sit on one Mac without
-getting in each other's way.
+Dual III, to replace VueScan. It has its own repository, apart from Dual Scan
+for the Dual IV (`anantap/dualscan`). They are separate apps (their own name,
+bundle ID, settings, scans folder and updates), so both can sit on one Mac
+without getting in each other's way.
+
+Download: https://github.com/anantap/dualscan-iii/releases/latest
 Scan once at full quality, make a base edit live (no rescans), then export
 a JPEG, a 16-bit base TIFF or the raw scan, or open the scans in another app.
 
@@ -34,11 +36,9 @@ app/build.sh --install  # … and copies it to /Applications
 
 ## Updates
 
-Like Roll Converter: every push to `dual-iii` that touches the app makes GitHub
+Like Roll Converter: every push to `main` that touches the app makes GitHub
 (`.github/workflows/dual-iii-app.yml`) build it, run the self-test and publish
-it as a release `dual-iii-build-<n>` with `Dual-Scan-III.zip`. It is never
-marked "latest", and the Dual IV app only takes `build-<n>` releases, so it
-never sees these. The app looks for a
+it as the latest release, `build-<n>` with `Dual-Scan-III.zip`. The app looks for a
 newer build when it starts (and under Dual Scan › Check for Updates…),
 downloads it in the background and puts it in place when you restart or quit.
 It won't restart while the scanner or an export is busy. A local build is

@@ -1,12 +1,11 @@
 name: Dual III app
 
 # Builds Dual Scan III on a Mac (with the SANE driver inside), runs the self-test on the simulated
-# Dual III, and publishes it as a release tagged dual-iii-build-<n>. That release is never marked
-# "latest" and Dual Scan (the Dual IV app on main) only takes build-<n> tags, so it never sees it.
-# To share it: https://github.com/anantap/dualscan/releases?q=dual-iii-build
+# Dual III, and publishes it as the latest release, tagged build-<n>. The app updates itself from it.
+# To share it: https://github.com/anantap/dualscan-iii/releases/latest
 on:
   push:
-    branches: [dual-iii]
+    branches: [main]
     paths:
       - 'app/**'
       - 'scripts/**'
@@ -22,8 +21,8 @@ jobs:
     # The app targets macOS 26, so it needs Xcode 26.
     runs-on: macos-26
     timeout-minutes: 40
-    # Publish only from the dual-iii branch, never from main.
-    if: github.ref == 'refs/heads/dual-iii'
+    # Publish only from main.
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
     env:
@@ -88,11 +87,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # The fixes since the previous Dual III release, app changes only: the update popup lists them.
-          PREV=$(gh release list --limit 100 --json tagName -q '[.[] | select(.tagName | startswith("dual-iii-build-"))][0].tagName // ""' 2>/dev/null || true)
+          # The fixes since the previous release, app changes only: the update popup lists them.
+          PREV=$(gh release view --json tagName -q .tagName 2>/dev/null || true)
           NOTES=$(git log ${PREV:+$PREV..}HEAD --no-merges --pretty='- %s' -- app scripts | head -40)
           [ -n "$NOTES" ] || NOTES="- $(git log -1 --pretty=%s)"
-          gh release create "dual-iii-build-$BUILD_NUMBER" Dual-Scan-III.zip \
-            --target "$GITHUB_SHA" --latest=false \
+          gh release create "build-$BUILD_NUMBER" Dual-Scan-III.zip \
+            --target "$GITHUB_SHA" --latest \
             --title "Dual Scan III, build $BUILD_NUMBER" \
             --notes "$NOTES"
